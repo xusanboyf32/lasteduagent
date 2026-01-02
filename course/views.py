@@ -404,6 +404,7 @@ from rest_framework.exceptions import PermissionDenied
 from .models import NotionURL
 from .serializers import NotionURLSerializer
 
+
 class NotionURLViewSet(viewsets.ModelViewSet):
     queryset = NotionURL.objects.all()
     serializer_class = NotionURLSerializer
@@ -418,11 +419,30 @@ class NotionURLViewSet(viewsets.ModelViewSet):
 
         # High Teacher → faqat o'z Notion URL'lari
         if hasattr(user, 'high_teacher_profile'):
-            return NotionURL.objects.filter(main_teacher=user.high_teacher_profile)
+            high_teacher = user.high_teacher_profile
+            # return NotionURL.objects.filter(main_teacher=user.high_teacher_profile)
+            return NotionURL.objects.filter(main_teacher=high_teacher)
 
-        # Boshqalar → faqat o'qish mumkin
-        return NotionURL.objects.all()  # GET ishlaydi, POST/PUT/DELETE rad qilinadi
 
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+            # ✅ YANGI: Assistant Teacher → faqat o'zi ishlaydigan guruhlarning notionlari
+        if hasattr(user, 'assistant_teacher_profile'):
+            assistant = user.assistant_teacher_profile
+            # O'zi assistant bo'lgan guruhlar
+            groups = Group.objects.filter(assistant_teacher=assistant)
+            # Shu guruhlarning notionlari
+            return NotionURL.objects.filter(group__in=groups)
+
+        # ✅ YANGI: Student → faqat o'z guruhining notionlari
+        if hasattr(user, 'student_profile'):
+            student = user.student_profile
+            if student.assigned_group:
+                return NotionURL.objects.filter(group=student.assigned_group)
+            return NotionURL.objects.none()
+
+        # ✅ YANGI: Boshqalar → hech narsa ko'rmasin
+        return NotionURL.objects.none()
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     # CREATE
     def perform_create(self, serializer):
         user = self.request.user
@@ -434,17 +454,46 @@ class NotionURLViewSet(viewsets.ModelViewSet):
         else:
             raise PermissionDenied("Sizga Notion qo'shish huquqi berilmagan")
 
-    # UPDATE
+
+
+    # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    # UPDATE NEW
     def perform_update(self, serializer):
         user = self.request.user
         instance = self.get_object()
 
         if user.is_superuser:
+            # Superadmin hohlaganini tahrirlashi mumkin
             serializer.save()
-        elif hasattr(user, 'high_teacher_profile') and instance.main_teacher == user.high_teacher_profile:
+
+        elif hasattr(user, 'high_teacher_profile'):
+            high_teacher = user.high_teacher_profile
+
+            # High teacher faqat o'zi yaratgan notionlarni tahrirlashi mumkin
+            if instance.main_teacher != high_teacher:
+                raise PermissionDenied("Siz faqat o'zingiz yaratgan notionlarni tahrirlay olasiz")
+
+            # ✅ Tahrirlashda ham guruhni tekshirish
+            new_group = serializer.validated_data.get('group')
+            if new_group and new_group.main_teacher != high_teacher:
+                raise PermissionDenied("Siz faqat o'zingiz main_teacher bo'lgan guruhlarga notion qo'sha olasiz")
+
             serializer.save()
+
         else:
             raise PermissionDenied("Sizga Notion tahrirlash huquqi berilmagan")
+    # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    # UPDATE  OLD
+    # def perform_update(self, serializer):
+    #     user = self.request.user
+    #     instance = self.get_object()
+    #
+    #     if user.is_superuser:
+    #         serializer.save()
+    #     elif hasattr(user, 'high_teacher_profile') and instance.main_teacher == user.high_teacher_profile:
+    #         serializer.save()
+    #     else:
+    #         raise PermissionDenied("Sizga Notion tahrirlash huquqi berilmagan")
 
     # DELETE
     def perform_destroy(self, instance):
@@ -452,10 +501,26 @@ class NotionURLViewSet(viewsets.ModelViewSet):
 
         if user.is_superuser:
             instance.delete()
-        elif hasattr(user, 'high_teacher_profile') and instance.main_teacher == user.high_teacher_profile:
-            instance.delete()
+
+
+        # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        elif hasattr(user, 'high_teacher_profile'):
+            high_teacher = user.high_teacher_profile
+
+            # High teacher faqat o'zi yaratgan notionlarni o'chirishi mumkin
+            if instance.main_teacher == high_teacher:
+                instance.delete()
+            else:
+                raise PermissionDenied("Siz faqat o'zingiz yaratgan notionlarni o'chira olasiz")
+
         else:
             raise PermissionDenied("Sizga Notion o'chirish huquqi berilmagan")
+        # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        # OLD NOTIN DELETE
+        # elif hasattr(user, 'high_teacher_profile') and instance.main_teacher == user.high_teacher_profile:
+        #     instance.delete()
+        # else:
+        #     raise PermissionDenied("Sizga Notion o'chirish huquqi berilmagan")
 
 # --------------------------------------------------------------------
 

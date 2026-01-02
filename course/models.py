@@ -238,6 +238,17 @@ class NotionURL(models.Model):
         verbose_name='Yordamchi ustozlar'
     )
 
+    # +++++++++++++++++++++++++++++++++++++++++++++++++
+    group = models.ForeignKey(
+        Group,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="notion_groups",
+        verbose_name="Guruh"
+    )
+    # +++++++++++++++++++++++++++++++++++++++++++++++++
+
 
     title = models.CharField(max_length=200)
 

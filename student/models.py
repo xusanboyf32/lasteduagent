@@ -45,7 +45,7 @@ class Student(models.Model):
         Course,
         on_delete=models.SET_NULL,
         related_name='course_students',
-        verbose_name='Kursga tegishli talabalar',
+        verbose_name='Talabaga tegishli kurs',
         null=True,
         blank=True
     )
@@ -55,7 +55,7 @@ class Student(models.Model):
         Group,
         on_delete=models.SET_NULL,
         related_name="group_students",
-        verbose_name='Guruhga tegishli talabalar',
+        verbose_name='Talabaga tegishli guruh',
         null=True,
         blank=True
     )
@@ -70,7 +70,7 @@ class Student(models.Model):
         null=True,
         blank=True,
         related_name="High_teacher_students",
-        verbose_name="Biriktirilgan hamkor",
+        verbose_name="Biriktirilgan katta ustoz",
         help_text="Operator tomonidan tanlanadi"
 
     )
@@ -81,7 +81,7 @@ class Student(models.Model):
         null=True,
         blank=True,
         related_name='assistant_students',
-        verbose_name='Yordamchi ustoz'
+        verbose_name='Biriktirilgan yordamchi ustoz'
 
     )
 
@@ -114,14 +114,14 @@ class Student(models.Model):
 # =============================================================================================
 # Student History modeli
 # =============================================================================================
-class StudentHistory(models.Model):
-    student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name="history")
-    author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
-    comment = models.TextField()
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        ordering = ["-created_at"]
-
-
-
+# class StudentHistory(models.Model):
+#     student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name="history")
+#     author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
+#     comment = models.TextField()
+#     created_at = models.DateTimeField(auto_now_add=True)
+#
+#     class Meta:
+#         ordering = ["-created_at"]
+#
+#
+#

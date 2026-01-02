@@ -105,18 +105,18 @@ class IsAuthenticatedReadOnly(BasePermission):
 
 
 # -----------------  NEW COURSE PERMISSION NEW VERSION --------------------------
-
-from rest_framework.permissions import BasePermission
-
-class IsAuthenticatedReadOnly(BasePermission):
-    """
-    Faqat login bo'lgan foydalanuvchilar GET (read-only) qila oladi.
-    POST/PUT/DELETE mutlaqo yopiq.
-    """
-    def has_permission(self, request, view):
-        if request.method not in ['GET', 'HEAD', 'OPTIONS']:
-            return False
-        return bool(request.user and request.user.is_authenticated)
+#
+# from rest_framework.permissions import BasePermission
+#
+# class IsAuthenticatedReadOnly(BasePermission):
+#     """
+#     Faqat login bo'lgan foydalanuvchilar GET (read-only) qila oladi.
+#     POST/PUT/DELETE mutlaqo yopiq.
+#     """
+#     def has_permission(self, request, view):
+#         if request.method not in ['GET', 'HEAD', 'OPTIONS']:
+#             return False
+#         return bool(request.user and request.user.is_authenticated)
 
 # -------------------------------------------------------------------------------
 
@@ -209,24 +209,5 @@ class IsSuperAdminOrSifatchiReadOnly(BasePermission):
             return True
 
         return False
-
-
-
-# NOTION UCHUN
-from rest_framework.permissions import BasePermission
-
-class IsAuthenticatedReadOnly(BasePermission):
-    def has_permission(self, request, view):
-        # faqat GET so'rovlarga ruxsat
-        if request.method not in ['GET', 'HEAD', 'OPTIONS']:
-            return False
-
-        # faqat login bo'lganlar
-        return bool(request.user and request.user.is_authenticated)
-
-
-
-
-
 
 

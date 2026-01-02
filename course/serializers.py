@@ -195,8 +195,9 @@ User = get_user_model()  # CustomUser bilan ishlash
 class NotionURLSerializer(serializers.ModelSerializer):
     # Read-only maydon (faqat GET)
     main_teacher = serializers.PrimaryKeyRelatedField(read_only=True)
-
+    group_name = serializers.CharField(source='group.name',read_only=True)
     # Write-only maydon (POST va PUT/PATCH uchun)
+
     main_teacher_id = serializers.PrimaryKeyRelatedField(
         queryset=High_Teacher.objects.all(),
         write_only=True,
@@ -204,6 +205,17 @@ class NotionURLSerializer(serializers.ModelSerializer):
         required=False,
         allow_null=True
     )
+
+    # +++++++++++++++++++++++++++++++++++++++++++++++++++
+    # ✅ YANGI: Group uchun
+    group_id = serializers.PrimaryKeyRelatedField(
+        queryset=Group.objects.all(),
+        write_only=True,
+        source='group',
+        required=False,
+        allow_null=True
+    )
+    # +++++++++++++++++++++++++++++++++++++++++++++++++++
 
     class Meta:
         model = NotionURL
@@ -214,6 +226,8 @@ class NotionURLSerializer(serializers.ModelSerializer):
             'main_teacher_id',
             'main_teacher',
             'created_at',
+            'group_name',
+            'group_id'
         ]
         read_only_fields = ['id', 'created_at']
 
