@@ -127,7 +127,7 @@ async def start(message: types.Message):
         logger.info(f"Start command received from chat_id: {chat_id}, args: {args}")
 
         if not args or not args.startswith("login_"):
-            await message.answer("Iltimos, faqat sayt orqali berilgan havola orqali kirishni so'rang.")
+            await message.answer("Iltimos, faqat sayt orqali berilgan havola orqali kiring!.")
             return
 
         session_token = args

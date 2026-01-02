@@ -210,3 +210,13 @@ CELERY_RESULT_BACKEND = os.environ.get('CELERY_RESULT_BACKEND')
 
 # ----------------------  GEMINI API KEY -------------------
 GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY')
+GOOGLE_API_KEY = GEMINI_API_KEY
+
+
+
+
+LOGIN_URL = 'auth:login'
+LOGIN_REDIRECT_URL = 'dashboard'
+
+SESSION_COOKIE_AGE = 86400  # 24 hours
+SESSION_SAVE_EVERY_REQUEST = True

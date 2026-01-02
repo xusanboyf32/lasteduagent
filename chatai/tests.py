@@ -1,33 +1,32 @@
-# tests.py faylini SHU KOD BILAN almashtiring:
+#==============================================
+from dotenv import load_dotenv
+import os
 from google import genai
 
-API_KEY = 'AIzaSyAj2b0xEJ1Ri3YpNWywjJX8xEGyPdO3kqM'
+load_dotenv()
+GEMINI_API_KEY=os.getenv("GEMINI_API_KEY")
+client = genai.Client(api_key=GEMINI_API_KEY)
 
-try:
-    client = genai.Client(api_key=API_KEY)
+print("=== Tekin chat (CTRL+C yoki 'exit' bilan chiqish) ===")
 
-    # 1-VARIANT: gemini-2.0-flash (BEPUL, ISHLASHI KERAK)
-    response = client.models.generate_content(
-        model="gemini-2.0-flash-001",  # ✅ TO'G'RI MODEL
-        contents="Salom, menga javob ber o'zbekcha"
-    )
-
-    print("✅ ISHLAYAPTI! (gemini-2.0-flash)")
-    print("Javob:", response.text)
-
-except Exception as e:
-    print("❌ XATO:", e)
-
-    # 2-VARIANT: Agar yuqoridagi ishlamasa, boshqa model
+while True:
     try:
-        response = client.models.generate_content(
-            model="gemini-2.5-flash",  # ✅ IKKINCHI VARIANT
-            contents="Salom"
+        savol = input("\nSavolni yozing: ")
+        if savol.lower() == "exit":
+            print("Dastur yakunlandi.")
+            break
+
+        # Faqat gemini-2.5-flash ishlatiladi
+        javob = client.models.generate_content(
+            model="gemini-2.5-flash",
+            contents=savol
         )
-        print("\n✅ gemini-2.5-flash ISHLAYAPTI!")
-        print("Javob:", response.text)
-    except Exception as e2:
-        print("❌ Ikkala model ham ishlamadi:", e2)
+        print("*" * 45)
+        print("✅ Javob:", javob.text)
+        print("*"* 45)
 
-
-
+    except KeyboardInterrupt:
+        print("\nDastur to'xtatildi.")
+        break
+    except Exception as e:
+        print("❌ Xatolik yuz berdi:", e)

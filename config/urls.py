@@ -21,7 +21,9 @@ urlpatterns = [
     path('admin/', admin.site.urls),
 
     # Authentication (masalan JWT yoki DRF auth)
-    path('api/auth/', include('rest_framework.urls')),
+    # path('api/auth/', include('rest_framework.urls')),
+
+    path('api/auth/', include(('rest_framework.urls', 'rest_framework'), namespace='auth')),
 
     # COURSE app uchun API
     path('api/course/', include(('course.urls', 'course'), namespace='course')),
@@ -45,4 +47,5 @@ from django.conf.urls.static import static
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+
 

@@ -9,19 +9,16 @@ class GoogleAIService:
         # Settings dan API kalitini olamiz
         self.api_key = getattr(settings, 'GOOGLE_API_KEY', '')
 
-        if not self.api_key or self.api_key.startswith('AIzaSy'):
+        if not self.api_key:
             raise ValueError(
-                "❌ Google API kaliti sozlanmagan.\n"
-                "1. makersuite.google.com/app/apikey ga kiring\n"
-                "2. Yangi API kalit oling\n"
-                "3. settings.py da GOOGLE_API_KEY = 'YANGI_KALIT' qo'ying"
+                "❌ Google API kaliti sozlanmagan!"
             )
 
         # Google AI clientini yaratamiz
         self.client = genai.Client(api_key=self.api_key)
 
         # Model nomi - SIZ TEST QILGAN MODEL
-        self.model_name = "gemini-2.0-flash-001"  # ✅ SIZ TEST QILGAN MODEL
+        self.model_name = "gemini-2.5-flash"  # ✅ SIZ TEST QILGAN MODEL
 
     def get_response(self, user_message, chat_history=None):
         """
@@ -49,10 +46,10 @@ class GoogleAIService:
         except Exception as e:
             # Agar birinchi model ishlamasa, ikkinchi modelni sinab ko'ramiz
             try:
-                print(f"⚠️ gemini-2.0-flash ishlamadi: {e}. Boshqa model sinab ko'ramiz...")
+                print(f"⚠️ gemini-1.5-flash ishlamadi: {e}. Boshqa model sinab ko'ramiz...")
 
                 response = self.client.models.generate_content(
-                    model="gemini-2.5-flash",  # ✅ IKKINCHI VARIANT
+                    model="gemini-1.5-flash",  # ✅ IKKINCHI VARIANT
                     contents=user_message
                 )
 
@@ -62,7 +59,7 @@ class GoogleAIService:
                     'success': True,
                     'response': response.text,
                     'response_time': round(response_time, 2),
-                    'model': "gemini-2.5-flash"
+                    'model': "gemini-1.5-flash"
                 }
 
             except Exception as e2:

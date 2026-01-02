@@ -1,6 +1,4 @@
 
-
-
 #  --------------------------- NEW VIEWS BU YANGI VERSIYADAGI GEMINI -----------------------------
 
 # chatai/views.py - FAQLAT YANGI VERSIYA
@@ -14,6 +12,8 @@ from django.utils import timezone
 import os
 from dotenv import load_dotenv
 from .models import ChatSession, ChatMessage
+from chatai.service import GoogleAIService
+
 
 load_dotenv()
 
@@ -45,7 +45,7 @@ def chat_api(request):
             # Kontekst uchun avvalgi xabarlar
             recent_messages = ChatMessage.objects.filter(
                 session=session
-            ).order_by('-timestamp')[:3]
+            ).order_by('-created_at')[:3]
 
             context_lines = []
             for msg in reversed(recent_messages):
@@ -62,21 +62,22 @@ def chat_api(request):
             Javobni faqat o'zbek tilida bering. Qisqa va aniq bo'lsin.
             """
 
-            # YANGI USUL: google-genai bilan ishlash
-            client = genai.Client(api_key=GEMINI_API_KEY)
+            # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+            ai_service = GoogleAIService()
+            result = ai_service.get_response(prompt)
 
-            response = client.models.generate_content(
-                model="gemini-1.5-flash",
-                contents=prompt
-            )
-
-            ai_response = response.text.strip()
+            if not result['success']:
+                return JsonResponse({
+                    'success': False,
+                    'error': result['response'],
+                    'session_id': session_id
+                }, status=500)
 
             # Database ga saqlash
             ChatMessage.objects.create(
                 session=session,
                 user_message=message,
-                ai_response=ai_response
+                ai_response=result['response']
             )
 
             session.updated_at = timezone.now()
@@ -84,17 +85,19 @@ def chat_api(request):
 
             return JsonResponse({
                 'success': True,
-                'response': ai_response,
-                'session_id': session_id
+                'response': result['response'],
+                'session_id': session_id,
+                'model': result.get('model', 'unknown')
             })
 
     except Exception as e:
+
         return JsonResponse({
             'success': False,
             'error': str(e)[:100],
             'response': 'Xatolik yuz berdi. Keyinroq urinib ko\'ring.'
         }, status=500)
-
+    # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 def get_history(request, session_id):
     """Suhbat tarixini olish"""
@@ -102,7 +105,7 @@ def get_history(request, session_id):
         session = ChatSession.objects.get(session_id=session_id)
         messages = ChatMessage.objects.filter(
             session=session
-        ).order_by('timestamp')
+        ).order_by('created_at')
 
         history = []
         for msg in messages:
@@ -110,8 +113,8 @@ def get_history(request, session_id):
                 'id': msg.id,
                 'user': msg.user_message,
                 'ai': msg.ai_response,
-                'time': msg.timestamp.strftime('%H:%M, %d.%m.%Y'),
-                'timestamp': msg.timestamp.isoformat()
+                'time': msg.created_at.strftime('%H:%M, %d.%m.%Y'),
+                'timestamp': msg.created_at.isoformat()
             })
 
         return JsonResponse({
